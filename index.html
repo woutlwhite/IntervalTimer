@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#14161a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Zirkel">
+  <title>Zirkel Timer</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ SETUP ============ -->
+<main id="setup" class="screen active">
+  <header class="top">
+    <h1>Zirkel Timer</h1>
+  </header>
+
+  <section class="card">
+    <div class="preset-row">
+      <select id="presetSelect" aria-label="Gespeichertes Workout"></select>
+      <button class="icon-btn" id="savePreset" title="Speichern" aria-label="Workout speichern">
+        <svg viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5zM8 3v5h7V3M8 21v-7h8v7"/></svg>
+      </button>
+      <button class="icon-btn" id="deletePreset" title="Löschen" aria-label="Workout löschen">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <section class="card settings">
+    <div class="setting">
+      <span class="label">Runden</span>
+      <div class="stepper" data-key="rounds" data-step="1" data-min="1" data-max="99" data-format="int">
+        <button type="button" data-dir="-1" aria-label="weniger">−</button>
+        <output></output>
+        <button type="button" data-dir="1" aria-label="mehr">+</button>
+      </div>
+    </div>
+    <div class="setting">
+      <span class="label"><i class="dot work"></i>Belastung</span>
+      <div class="stepper" data-key="work" data-step="5" data-min="5" data-max="3600" data-format="time">
+        <button type="button" data-dir="-1" aria-label="weniger">−</button>
+        <output></output>
+        <button type="button" data-dir="1" aria-label="mehr">+</button>
+      </div>
+    </div>
+    <div class="setting">
+      <span class="label"><i class="dot rest"></i>Pause</span>
+      <div class="stepper" data-key="rest" data-step="5" data-min="0" data-max="3600" data-format="time">
+        <button type="button" data-dir="-1" aria-label="weniger">−</button>
+        <output></output>
+        <button type="button" data-dir="1" aria-label="mehr">+</button>
+      </div>
+    </div>
+    <div class="setting">
+      <span class="label"><i class="dot roundrest"></i>Rundenpause</span>
+      <div class="stepper" data-key="roundRest" data-step="15" data-min="0" data-max="3600" data-format="time">
+        <button type="button" data-dir="-1" aria-label="weniger">−</button>
+        <output></output>
+        <button type="button" data-dir="1" aria-label="mehr">+</button>
+      </div>
+    </div>
+    <div class="setting">
+      <span class="label"><i class="dot prep"></i>Vorbereitung</span>
+      <div class="stepper" data-key="prep" data-step="5" data-min="0" data-max="120" data-format="time">
+        <button type="button" data-dir="-1" aria-label="weniger">−</button>
+        <output></output>
+        <button type="button" data-dir="1" aria-label="mehr">+</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>Übungen <span id="exCount" class="muted"></span></h2>
+    </div>
+    <ol id="exerciseList" class="ex-list"></ol>
+    <button type="button" id="addExercise" class="add-btn">+ Übung hinzufügen</button>
+  </section>
+
+  <div class="start-bar">
+    <div class="total"><span class="muted">Gesamt</span> <strong id="totalTime">0:00</strong></div>
+    <button type="button" id="startBtn" class="primary">Start</button>
+  </div>
+</main>
+
+<!-- ============ TIMER ============ -->
+<main id="timer" class="screen" data-phase="prep">
+  <div class="t-top">
+    <span id="tRound">Runde 1/3</span>
+    <span id="tExercise">Übung 1/8</span>
+  </div>
+
+  <div class="t-center">
+    <div id="tPhase" class="t-phase">Gleich geht's los</div>
+    <div id="tName" class="t-name">Kniebeugen</div>
+    <div id="tClock" class="t-clock">0:10</div>
+    <div class="t-bar"><div id="tBarFill"></div></div>
+    <div id="tNext" class="t-next">Danach: Pause</div>
+  </div>
+
+  <div class="t-meta">
+    <span>Verbleibend gesamt <strong id="tTotalLeft">0:00</strong></span>
+  </div>
+
+  <div class="t-controls">
+    <button type="button" id="prevBtn" class="ctrl" aria-label="Zurück">
+      <svg viewBox="0 0 24 24"><path d="M18 5 8 12l10 7zM6 5v14"/></svg>
+    </button>
+    <button type="button" id="pauseBtn" class="ctrl big" aria-label="Pause">
+      <svg class="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg>
+      <svg class="i-play" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>
+    </button>
+    <button type="button" id="nextBtn" class="ctrl" aria-label="Weiter">
+      <svg viewBox="0 0 24 24"><path d="M6 5l10 7-10 7zM18 5v14"/></svg>
+    </button>
+  </div>
+  <button type="button" id="stopBtn" class="stop-link">Beenden</button>
+</main>
+
+<!-- ============ DONE ============ -->
+<main id="done" class="screen">
+  <div class="done-box">
+    <div class="done-check">
+      <svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+    </div>
+    <h2>Geschafft!</h2>
+    <p id="doneSummary" class="muted"></p>
+    <button type="button" id="doneBtn" class="primary">Fertig</button>
+  </div>
+</main>
+
+<dialog id="saveDialog">
+  <form method="dialog">
+    <h3>Workout speichern</h3>
+    <input id="presetName" type="text" placeholder="Name, z. B. VHS Zirkel" maxlength="40" autocomplete="off">
+    <div class="dlg-actions">
+      <button value="cancel" type="submit" class="ghost">Abbrechen</button>
+      <button value="ok" type="submit" class="primary small">Speichern</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="app.js"></script>
+</body>
+</html>
