@@ -16,3 +16,6 @@ Intervall-Timer für Zirkeltraining. Läuft komplett im Browser, keine Installat
 - **Zum Homescreen hinzufügen** (Safari: Teilen → „Zum Home-Bildschirm“), dann startet die App wie eine native App im Vollbild.
 - Auf dem iPhone ist ohne Ton, wenn der Lautlos-Schalter aktiv ist.
 - Rundenpause auf 0:00 = zwischen den Runden wird die normale Pause verwendet.
+
+## Entwicklung
+Projektstand und Hinweise für die Weiterarbeit: [`CLAUDE.md`](CLAUDE.md) und [`docs/STATUS.md`](docs/STATUS.md).
